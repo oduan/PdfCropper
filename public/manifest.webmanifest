@@ -1,7 +1,7 @@
 {
-  "name": "Margin PDF 裁切器",
+  "name": "Margin PDF Cropper",
   "short_name": "Margin",
-  "description": "完全在浏览器本地处理的 PDF 可视化裁切工具",
+  "description": "A private, browser-local tool for visually cropping PDF pages",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

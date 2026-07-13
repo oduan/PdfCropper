@@ -8,41 +8,34 @@ pdfjs.GlobalWorkerOptions.workerSrc = pdfWorker;
 type Crop = { x: number; y: number; width: number; height: number };
 
 const icons = {
-  file: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8M8 17h5"/></svg>',
   upload: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M5 14v5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-5"/></svg>',
   crop: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 2v14a2 2 0 0 0 2 2h14M2 6h14a2 2 0 0 1 2 2v14"/></svg>',
   chevronLeft: '<svg viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg>',
   chevronRight: '<svg viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>',
-  check: '<svg viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></svg>',
 };
 
 document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
   <main class="app-shell">
     <header class="topbar">
-      <div class="brand"><span class="brand-mark">M</span><span>Margin</span><small>PDF 裁切器</small></div>
-      <div class="file-meta" id="fileMeta"><span class="status-dot"></span><span>等待文档</span></div>
+      <div class="brand"><span class="brand-mark">M</span><span>Margin</span></div>
+      <div class="file-meta" id="fileMeta"><span class="status-dot"></span><span>Waiting for a document</span></div>
       <div class="top-actions">
-        <button class="button button-quiet" id="openButton">${icons.file}<span>打开 PDF</span></button>
-        <button class="button button-accent" id="exportButton" disabled>${icons.crop}<span>导出裁切版</span></button>
+        <button class="button button-accent button-export" id="exportButton" disabled>${icons.crop}<span>Export</span></button>
       </div>
     </header>
 
     <section class="workspace empty" id="workspace">
-      <aside class="page-rail" aria-label="页面导航">
-        <div class="rail-label">页面</div>
-        <div class="page-list" id="pageList"></div>
-      </aside>
-
       <section class="stage" id="stage">
         <div class="drop-zone" id="dropZone">
           <div class="drop-icon">${icons.upload}</div>
-          <h1>把 PDF 放到这里</h1>
-          <p>拖入文件，框选需要保留的页面区域</p>
-          <button class="button button-accent" id="chooseButton">选择 PDF</button>
-          <span class="drop-hint">文件仅在本机处理</span>
+          <h1>Drop a PDF here</h1>
+          <p>Select the page area you want to keep</p>
+          <button class="button button-accent" id="chooseButton">Choose PDF</button>
+          <span class="drop-hint">Your file never leaves this browser</span>
         </div>
 
         <div class="document-stage" id="documentStage">
+          <div class="workspace-hint">Drag selection to move · Drag corners to resize</div>
           <div class="canvas-wrap" id="canvasWrap">
             <canvas id="pdfCanvas"></canvas>
             <div class="crop-shade" id="cropShade"></div>
@@ -52,44 +45,14 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
             </div>
           </div>
           <div class="page-controls">
-            <button class="icon-button" id="prevPage" aria-label="上一页">${icons.chevronLeft}</button>
+            <button class="icon-button" id="prevPage" aria-label="Previous page">${icons.chevronLeft}</button>
             <span><strong id="currentPageLabel">1</strong> / <span id="totalPagesLabel">1</span></span>
-            <button class="icon-button" id="nextPage" aria-label="下一页">${icons.chevronRight}</button>
+            <button class="icon-button" id="nextPage" aria-label="Next page">${icons.chevronRight}</button>
             <span class="control-divider"></span>
             <span id="pageSizeLabel">—</span>
           </div>
         </div>
       </section>
-
-      <aside class="inspector">
-        <div class="inspector-heading">
-          <span class="eyebrow">裁切范围</span>
-          <h2>保留区域</h2>
-          <p>在页面上拖动鼠标框选，框内内容会被保留。</p>
-        </div>
-
-        <div class="scope-switch" role="group" aria-label="裁切应用范围">
-          <button class="active" data-scope="current">仅当前页</button>
-          <button data-scope="all">全部页面</button>
-        </div>
-
-        <div class="measure-grid">
-          <label><span>左边距</span><div><input id="cropX" type="number" min="0" max="100" step="0.1" value="0"><em>%</em></div></label>
-          <label><span>上边距</span><div><input id="cropY" type="number" min="0" max="100" step="0.1" value="0"><em>%</em></div></label>
-          <label><span>宽度</span><div><input id="cropW" type="number" min="1" max="100" step="0.1" value="100"><em>%</em></div></label>
-          <label><span>高度</span><div><input id="cropH" type="number" min="1" max="100" step="0.1" value="100"><em>%</em></div></label>
-        </div>
-
-        <div class="preset-row">
-          <button id="resetCrop">整页</button>
-          <button id="clearCrop">清除本页设置</button>
-        </div>
-
-        <div class="inspector-note">
-          <span>${icons.check}</span>
-          <p><strong>不会压缩画质</strong>导出时只修改页面边界，文字和矢量内容保持清晰。</p>
-        </div>
-      </aside>
     </section>
     <input id="filePicker" type="file" accept="application/pdf,.pdf" hidden>
     <div class="toast" id="toast"></div>
@@ -104,18 +67,12 @@ const canvas = $<HTMLCanvasElement>('#pdfCanvas');
 const canvasWrap = $('#canvasWrap');
 const selection = $('#selection');
 const toast = $('#toast');
-const inputs = {
-  x: $<HTMLInputElement>('#cropX'), y: $<HTMLInputElement>('#cropY'),
-  width: $<HTMLInputElement>('#cropW'), height: $<HTMLInputElement>('#cropH'),
-};
 
 let sourceBytes: Uint8Array | null = null;
 let sourceName = '';
 let pdf: pdfjs.PDFDocumentProxy | null = null;
 let pageNumber = 1;
 let renderToken = 0;
-let scope: 'current' | 'all' = 'current';
-const pageCrops = new Map<number, Crop>();
 let allPagesCrop: Crop | null = null;
 let drawing = false;
 let dragMode: 'draw' | 'move' | 'resize' = 'draw';
@@ -124,7 +81,7 @@ let dragStart = { x: 0, y: 0 };
 let dragCrop: Crop = { x: 0, y: 0, width: 1, height: 1 };
 
 const fullCrop = (): Crop => ({ x: 0, y: 0, width: 1, height: 1 });
-const activeCrop = () => scope === 'all' ? (allPagesCrop ?? fullCrop()) : (pageCrops.get(pageNumber) ?? fullCrop());
+const activeCrop = () => allPagesCrop ?? fullCrop();
 
 function showToast(message: string, type: 'success' | 'error' = 'success') {
   toast.textContent = message;
@@ -133,50 +90,34 @@ function showToast(message: string, type: 'success' | 'error' = 'success') {
 }
 
 async function openFile(file: File) {
-  if (!file.name.toLowerCase().endsWith('.pdf')) return showToast('请选择 PDF 文件', 'error');
-  let step = '读取文件';
+  if (!file.name.toLowerCase().endsWith('.pdf')) return showToast('Please choose a PDF file.', 'error');
+  let step = 'Reading file';
   try {
     workspace.classList.add('loading');
     const safeBytes = new Uint8Array(await file.arrayBuffer());
-    step = '解析文档';
+    step = 'Parsing document';
     const loaded = await pdfjs.getDocument({ data: safeBytes.slice() }).promise;
     sourceBytes = safeBytes;
     sourceName = file.name || 'document.pdf';
     pdf = loaded;
     pageNumber = 1;
-    pageCrops.clear();
     allPagesCrop = null;
     workspace.classList.remove('empty');
     $('#exportButton').removeAttribute('disabled');
-    $('#fileMeta').innerHTML = `<span class="status-dot ready"></span><span title="${sourceName}">${sourceName}</span><small>${pdf.numPages} 页</small>`;
+    $('#fileMeta').innerHTML = `<span class="status-dot ready"></span><span title="${sourceName}">${sourceName}</span><small>${pdf.numPages} pages</small>`;
     $('#totalPagesLabel').textContent = String(pdf.numPages);
-    buildPageList();
-    step = '渲染页面';
+    step = 'Rendering page';
     await renderPage();
-    showToast('PDF 已载入，可以开始框选');
+    showToast('PDF ready. Draw the area you want to keep.');
   } catch (error) {
     console.error(error);
     const detail = error instanceof Error ? error.message : String(error);
     const message = detail.includes('password')
-      ? '这个 PDF 受密码保护，目前无法打开'
-      : `${step}失败：${detail || '未知错误'}`;
+      ? 'This PDF is password protected and cannot be opened yet.'
+      : `${step} failed: ${detail || 'Unknown error'}`;
     showToast(message, 'error');
   } finally {
     workspace.classList.remove('loading');
-  }
-}
-
-function buildPageList() {
-  const list = $('#pageList');
-  list.innerHTML = '';
-  if (!pdf) return;
-  for (let index = 1; index <= pdf.numPages; index++) {
-    const button = document.createElement('button');
-    button.className = index === pageNumber ? 'page-item active' : 'page-item';
-    button.innerHTML = `<span>${String(index).padStart(2, '0')}</span><i></i>`;
-    button.title = `第 ${index} 页`;
-    button.addEventListener('click', () => goToPage(index));
-    list.append(button);
   }
 }
 
@@ -200,22 +141,14 @@ async function renderPage() {
   await page.render({ canvas, viewport, transform: ratio === 1 ? undefined : [ratio, 0, 0, ratio, 0, 0] }).promise;
   $('#currentPageLabel').textContent = String(pageNumber);
   $('#pageSizeLabel').textContent = `${Math.round(baseViewport.width)} × ${Math.round(baseViewport.height)} pt`;
-  updatePageListState();
   updateSelectionUI();
   ($('#prevPage') as HTMLButtonElement).disabled = pageNumber === 1;
   ($('#nextPage') as HTMLButtonElement).disabled = pageNumber === pdf.numPages;
 }
 
-function updatePageListState() {
-  document.querySelectorAll<HTMLButtonElement>('.page-item').forEach((button, index) => {
-    button.classList.toggle('active', index + 1 === pageNumber);
-    button.classList.toggle('cropped', pageCrops.has(index + 1) || allPagesCrop !== null);
-  });
-}
-
 function updateSelectionUI() {
   const crop = activeCrop();
-  const isEditable = scope === 'all' ? allPagesCrop !== null : pageCrops.has(pageNumber);
+  const isEditable = allPagesCrop !== null;
   selection.classList.toggle('editable', isEditable);
   selection.style.left = `${crop.x * 100}%`;
   selection.style.top = `${crop.y * 100}%`;
@@ -225,10 +158,6 @@ function updateSelectionUI() {
   canvasWrap.style.setProperty('--crop-top', `${crop.y * 100}%`);
   canvasWrap.style.setProperty('--crop-right', `${(1 - crop.x - crop.width) * 100}%`);
   canvasWrap.style.setProperty('--crop-bottom', `${(1 - crop.y - crop.height) * 100}%`);
-  inputs.x.value = (crop.x * 100).toFixed(1);
-  inputs.y.value = (crop.y * 100).toFixed(1);
-  inputs.width.value = (crop.width * 100).toFixed(1);
-  inputs.height.value = (crop.height * 100).toFixed(1);
 }
 
 function setCrop(crop: Crop) {
@@ -238,17 +167,14 @@ function setCrop(crop: Crop) {
     width: Math.max(0.01, Math.min(crop.width, 1 - crop.x)),
     height: Math.max(0.01, Math.min(crop.height, 1 - crop.y)),
   };
-  if (scope === 'all') allPagesCrop = normalized;
-  else pageCrops.set(pageNumber, normalized);
+  allPagesCrop = normalized;
   updateSelectionUI();
-  updatePageListState();
 }
 
 async function goToPage(next: number) {
   if (!pdf || next < 1 || next > pdf.numPages || next === pageNumber) return;
   pageNumber = next;
   await renderPage();
-  document.querySelector('.page-item.active')?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
 }
 
 function pointerPosition(event: PointerEvent) {
@@ -315,35 +241,10 @@ canvasWrap.addEventListener('pointerup', () => {
   canvasWrap.classList.remove('selecting');
 });
 
-Object.entries(inputs).forEach(([key, input]) => {
-  input.addEventListener('change', () => {
-    const crop = activeCrop();
-    const value = Number(input.value) / 100;
-    setCrop({ ...crop, [key]: value });
-  });
-});
-
-document.querySelectorAll<HTMLButtonElement>('[data-scope]').forEach((button) => {
-  button.addEventListener('click', () => {
-    scope = button.dataset.scope as 'current' | 'all';
-    document.querySelectorAll('[data-scope]').forEach(el => el.classList.toggle('active', el === button));
-    updateSelectionUI();
-  });
-});
-
-$('#resetCrop').addEventListener('click', () => setCrop(fullCrop()));
-$('#clearCrop').addEventListener('click', () => {
-  if (scope === 'all') allPagesCrop = null;
-  else pageCrops.delete(pageNumber);
-  updateSelectionUI();
-  updatePageListState();
-});
-
 async function chooseFile() {
   $<HTMLInputElement>('#filePicker').click();
 }
 
-$('#openButton').addEventListener('click', chooseFile);
 $('#chooseButton').addEventListener('click', chooseFile);
 $<HTMLInputElement>('#filePicker').addEventListener('change', async (event) => {
   const input = event.currentTarget as HTMLInputElement;
@@ -388,7 +289,7 @@ async function saveInBrowser(bytes: Uint8Array, suggestedName: string) {
     try {
       const handle = await pickerWindow.showSaveFilePicker({
         suggestedName,
-        types: [{ description: 'PDF 文档', accept: { 'application/pdf': ['.pdf'] } }],
+        types: [{ description: 'PDF document', accept: { 'application/pdf': ['.pdf'] } }],
       });
       const writable = await handle.createWritable();
       await writable.write(blob);
@@ -415,7 +316,7 @@ $('#exportButton').addEventListener('click', async () => {
   try {
     button.disabled = true;
     button.classList.add('working');
-    button.querySelector('span')!.textContent = '正在导出…';
+    button.querySelector('span')!.textContent = 'Exporting…';
     const source = await PDFDocument.load(sourceBytes.slice());
     const output = await PDFDocument.create();
     const sourcePages = source.getPages();
@@ -423,7 +324,7 @@ $('#exportButton').addEventListener('click', async () => {
     for (let index = 0; index < sourcePages.length; index++) {
       const sourcePage = sourcePages[index];
       const mediaBox = sourcePage.getMediaBox();
-      const crop = allPagesCrop ?? pageCrops.get(index + 1);
+      const crop = allPagesCrop;
       let box = {
         left: mediaBox.x,
         bottom: mediaBox.y,
@@ -467,14 +368,14 @@ $('#exportButton').addEventListener('click', async () => {
     const bytes = await output.save();
     const suggestedName = sourceName.replace(/\.pdf$/i, '') + '-cropped.pdf';
     const savedName = await saveInBrowser(bytes, suggestedName);
-    if (savedName) showToast(`已保存：${savedName}`);
+    if (savedName) showToast(`Saved: ${savedName}`);
   } catch (error) {
     console.error(error);
-    showToast('导出失败，请重试', 'error');
+    showToast('Export failed. Please try again.', 'error');
   } finally {
     button.disabled = false;
     button.classList.remove('working');
-    button.querySelector('span')!.textContent = '导出裁切版';
+    button.querySelector('span')!.textContent = 'Export';
   }
 });
 
