@@ -1,0 +1,15 @@
+node_modules/
+.npm-cache/
+.vite/
+dist/
+coverage/
+tmp/
+output/
+
+.env
+.env.*
+!.env.example
+
+*.log
+.DS_Store
+Thumbs.db
