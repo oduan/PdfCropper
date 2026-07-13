@@ -42,6 +42,8 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
             <div class="selection" id="selection">
               <i data-handle="nw" aria-hidden="true"></i><i data-handle="ne" aria-hidden="true"></i>
               <i data-handle="se" aria-hidden="true"></i><i data-handle="sw" aria-hidden="true"></i>
+              <i data-handle="n" aria-hidden="true"></i><i data-handle="e" aria-hidden="true"></i>
+              <i data-handle="s" aria-hidden="true"></i><i data-handle="w" aria-hidden="true"></i>
             </div>
           </div>
           <div class="page-controls">
@@ -80,7 +82,6 @@ let dragHandle = '';
 let dragStart = { x: 0, y: 0 };
 let dragCrop: Crop = { x: 0, y: 0, width: 1, height: 1 };
 
-const defaultCrop = (): Crop => ({ x: 0.06, y: 0.06, width: 0.88, height: 0.88 });
 const fullCrop = (): Crop => ({ x: 0, y: 0, width: 1, height: 1 });
 const activeCrop = () => allPagesCrop ?? fullCrop();
 
@@ -102,7 +103,7 @@ async function openFile(file: File) {
     sourceName = file.name || 'document.pdf';
     pdf = loaded;
     pageNumber = 1;
-    allPagesCrop = defaultCrop();
+    allPagesCrop = fullCrop();
     workspace.classList.remove('empty');
     $('#exportButton').removeAttribute('disabled');
     $('#fileMeta').innerHTML = `<span class="status-dot ready"></span><span title="${sourceName}">${sourceName}</span><small>${pdf.numPages} pages</small>`;

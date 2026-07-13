@@ -62,16 +62,29 @@ svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width:
 
 .canvas-wrap { position: relative; flex: 0 0 auto; background: white; box-shadow: 0 28px 75px rgba(0, 0, 0, .38), 0 2px 7px rgba(0, 0, 0, .42); cursor: crosshair; user-select: none; touch-action: none; transition: width .2s, height .2s; }
 #pdfCanvas { display: block; }
-.crop-shade { pointer-events: none; position: absolute; inset: 0; background: linear-gradient(to right, rgba(14, 15, 12, .71) var(--crop-left), transparent var(--crop-left), transparent calc(100% - var(--crop-right)), rgba(14, 15, 12, .71) calc(100% - var(--crop-right))), linear-gradient(to bottom, rgba(14, 15, 12, .71) var(--crop-top), transparent var(--crop-top), transparent calc(100% - var(--crop-bottom)), rgba(14, 15, 12, .71) calc(100% - var(--crop-bottom))); mix-blend-mode: multiply; }
+.crop-shade {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(rgba(14, 15, 12, .71), rgba(14, 15, 12, .71)) left top / var(--crop-left) 100% no-repeat,
+    linear-gradient(rgba(14, 15, 12, .71), rgba(14, 15, 12, .71)) right top / var(--crop-right) 100% no-repeat,
+    linear-gradient(rgba(14, 15, 12, .71), rgba(14, 15, 12, .71)) var(--crop-left) top / calc(100% - var(--crop-left) - var(--crop-right)) var(--crop-top) no-repeat,
+    linear-gradient(rgba(14, 15, 12, .71), rgba(14, 15, 12, .71)) var(--crop-left) bottom / calc(100% - var(--crop-left) - var(--crop-right)) var(--crop-bottom) no-repeat;
+}
 .selection { position: absolute; pointer-events: none; border: 1.5px solid var(--accent); box-shadow: 0 0 0 1px rgba(20, 21, 17, .45); transition: left .12s, top .12s, width .12s, height .12s; }
 .selection.editable { pointer-events: auto; cursor: move; }
 .selecting .selection { transition: none; }
 .selection i { position: absolute; width: 9px; height: 9px; border: 1px solid #27291b; border-radius: 1px; background: var(--accent); pointer-events: none; }
 .selection.editable i { pointer-events: auto; }
-.selection i:nth-child(1) { left: -4px; top: -4px; }
-.selection i:nth-child(2) { right: -4px; top: -4px; }
-.selection i:nth-child(3) { right: -4px; bottom: -4px; }
-.selection i:nth-child(4) { left: -4px; bottom: -4px; }
+.selection i[data-handle='nw'] { left: -4px; top: -4px; }
+.selection i[data-handle='ne'] { right: -4px; top: -4px; }
+.selection i[data-handle='se'] { right: -4px; bottom: -4px; }
+.selection i[data-handle='sw'] { left: -4px; bottom: -4px; }
+.selection i[data-handle='n'] { left: 50%; top: -4px; transform: translateX(-50%); cursor: ns-resize; }
+.selection i[data-handle='e'] { right: -4px; top: 50%; transform: translateY(-50%); cursor: ew-resize; }
+.selection i[data-handle='s'] { left: 50%; bottom: -4px; transform: translateX(-50%); cursor: ns-resize; }
+.selection i[data-handle='w'] { left: -4px; top: 50%; transform: translateY(-50%); cursor: ew-resize; }
 .selection i[data-handle='nw'], .selection i[data-handle='se'] { cursor: nwse-resize; }
 .selection i[data-handle='ne'], .selection i[data-handle='sw'] { cursor: nesw-resize; }
 
