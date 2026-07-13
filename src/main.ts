@@ -35,10 +35,13 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
         </div>
 
         <div class="document-stage" id="documentStage">
-          <div class="workspace-hint">Drag selection to move · Drag corners to resize</div>
+          <div class="workspace-hint">Drag selection to move · Drag handles to resize</div>
           <div class="canvas-wrap" id="canvasWrap">
             <canvas id="pdfCanvas"></canvas>
-            <div class="crop-shade" id="cropShade"></div>
+            <div class="crop-shade" id="cropShade" aria-hidden="true">
+              <i class="shade-left"></i><i class="shade-right"></i>
+              <i class="shade-top"></i><i class="shade-bottom"></i>
+            </div>
             <div class="selection" id="selection">
               <i data-handle="nw" aria-hidden="true"></i><i data-handle="ne" aria-hidden="true"></i>
               <i data-handle="se" aria-hidden="true"></i><i data-handle="sw" aria-hidden="true"></i>

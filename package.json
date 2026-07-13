@@ -1,6 +1,6 @@
 {
   "name": "margin-pdf-cropper",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "description": "A private, browser-local PDF cropper that works without a backend.",
   "type": "module",

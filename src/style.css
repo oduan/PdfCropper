@@ -66,12 +66,12 @@ svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width:
   pointer-events: none;
   position: absolute;
   inset: 0;
-  background:
-    linear-gradient(rgba(14, 15, 12, .71), rgba(14, 15, 12, .71)) left top / var(--crop-left) 100% no-repeat,
-    linear-gradient(rgba(14, 15, 12, .71), rgba(14, 15, 12, .71)) right top / var(--crop-right) 100% no-repeat,
-    linear-gradient(rgba(14, 15, 12, .71), rgba(14, 15, 12, .71)) var(--crop-left) top / calc(100% - var(--crop-left) - var(--crop-right)) var(--crop-top) no-repeat,
-    linear-gradient(rgba(14, 15, 12, .71), rgba(14, 15, 12, .71)) var(--crop-left) bottom / calc(100% - var(--crop-left) - var(--crop-right)) var(--crop-bottom) no-repeat;
 }
+.crop-shade i { position: absolute; display: block; background: rgba(14, 15, 12, .71); }
+.crop-shade .shade-left { inset: 0 auto 0 0; width: var(--crop-left); }
+.crop-shade .shade-right { inset: 0 0 0 auto; width: var(--crop-right); }
+.crop-shade .shade-top { top: 0; left: var(--crop-left); right: var(--crop-right); height: var(--crop-top); }
+.crop-shade .shade-bottom { bottom: 0; left: var(--crop-left); right: var(--crop-right); height: var(--crop-bottom); }
 .selection { position: absolute; pointer-events: none; border: 1.5px solid var(--accent); box-shadow: 0 0 0 1px rgba(20, 21, 17, .45); transition: left .12s, top .12s, width .12s, height .12s; }
 .selection.editable { pointer-events: auto; cursor: move; }
 .selecting .selection { transition: none; }
