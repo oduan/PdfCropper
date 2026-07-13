@@ -17,7 +17,7 @@ const icons = {
 document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
   <main class="app-shell">
     <header class="topbar">
-      <div class="brand"><span class="brand-mark">M</span><span>Margin</span></div>
+      <button class="brand" id="reloadButton" type="button" aria-label="Reload Margin"><span class="brand-mark">M</span><span>Margin</span></button>
       <div class="file-meta" id="fileMeta"><span class="status-dot"></span><span>Waiting for a document</span></div>
       <div class="top-actions">
         <button class="button button-accent button-export" id="exportButton" disabled>${icons.crop}<span>Export</span></button>
@@ -75,11 +75,12 @@ let pageNumber = 1;
 let renderToken = 0;
 let allPagesCrop: Crop | null = null;
 let drawing = false;
-let dragMode: 'draw' | 'move' | 'resize' = 'draw';
+let dragMode: 'move' | 'resize' = 'move';
 let dragHandle = '';
 let dragStart = { x: 0, y: 0 };
 let dragCrop: Crop = { x: 0, y: 0, width: 1, height: 1 };
 
+const defaultCrop = (): Crop => ({ x: 0.06, y: 0.06, width: 0.88, height: 0.88 });
 const fullCrop = (): Crop => ({ x: 0, y: 0, width: 1, height: 1 });
 const activeCrop = () => allPagesCrop ?? fullCrop();
 
@@ -101,14 +102,14 @@ async function openFile(file: File) {
     sourceName = file.name || 'document.pdf';
     pdf = loaded;
     pageNumber = 1;
-    allPagesCrop = null;
+    allPagesCrop = defaultCrop();
     workspace.classList.remove('empty');
     $('#exportButton').removeAttribute('disabled');
     $('#fileMeta').innerHTML = `<span class="status-dot ready"></span><span title="${sourceName}">${sourceName}</span><small>${pdf.numPages} pages</small>`;
     $('#totalPagesLabel').textContent = String(pdf.numPages);
     step = 'Rendering page';
     await renderPage();
-    showToast('PDF ready. Draw the area you want to keep.');
+    showToast('PDF ready. Adjust the crop area, then export.');
   } catch (error) {
     console.error(error);
     const detail = error instanceof Error ? error.message : String(error);
@@ -189,14 +190,16 @@ function pointerPosition(event: PointerEvent) {
 
 canvasWrap.addEventListener('pointerdown', (event) => {
   if (!pdf) return;
+  const target = event.target as HTMLElement;
+  const handle = target.closest<HTMLElement>('.selection i')?.dataset.handle;
+  const selectedArea = target.closest('.selection.editable');
+  if (!handle && !selectedArea) return;
   drawing = true;
   canvasWrap.setPointerCapture(event.pointerId);
   const point = pointerPosition(event);
   dragStart = { x: point.x / point.width, y: point.y / point.height };
   dragCrop = { ...activeCrop() };
-  const target = event.target as HTMLElement;
-  const handle = target.closest<HTMLElement>('.selection i')?.dataset.handle;
-  dragMode = handle ? 'resize' : target.closest('.selection.editable') ? 'move' : 'draw';
+  dragMode = handle ? 'resize' : 'move';
   dragHandle = handle ?? '';
   canvasWrap.classList.add('selecting');
 });
@@ -231,9 +234,6 @@ canvasWrap.addEventListener('pointermove', (event) => {
     return;
   }
 
-  const x = Math.min(dragStart.x, current.x);
-  const y = Math.min(dragStart.y, current.y);
-  setCrop({ x, y, width: Math.max(0.01, Math.abs(current.x - dragStart.x)), height: Math.max(0.01, Math.abs(current.y - dragStart.y)) });
 });
 
 canvasWrap.addEventListener('pointerup', () => {
@@ -246,6 +246,7 @@ async function chooseFile() {
 }
 
 $('#chooseButton').addEventListener('click', chooseFile);
+$('#reloadButton').addEventListener('click', () => window.location.reload());
 $<HTMLInputElement>('#filePicker').addEventListener('change', async (event) => {
   const input = event.currentTarget as HTMLInputElement;
   const file = input.files?.[0];

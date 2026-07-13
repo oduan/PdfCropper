@@ -24,8 +24,10 @@ svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width:
   border-bottom: 1px solid var(--line);
   background: rgba(23, 24, 21, 0.97);
 }
-.brand { display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 18px; letter-spacing: -.02em; }
-.brand-mark { display: grid; place-items: center; width: 29px; height: 29px; border-radius: 50%; color: var(--accent-ink); background: var(--accent); font-size: 14px; }
+.brand { width: fit-content; display: flex; align-items: center; gap: 10px; border: 0; padding: 0; color: inherit; background: transparent; font-weight: 600; font-size: 18px; letter-spacing: -.02em; cursor: pointer; }
+.brand:hover .brand-mark { transform: rotate(-8deg) scale(1.05); }
+.brand:focus-visible { outline: 2px solid var(--accent); outline-offset: 5px; border-radius: 2px; }
+.brand-mark { display: grid; place-items: center; width: 29px; height: 29px; border-radius: 50%; color: var(--accent-ink); background: var(--accent); font-size: 14px; transition: transform .18s ease; }
 .file-meta { justify-self: center; max-width: 100%; display: flex; gap: 8px; align-items: center; color: #b8bab0; font-size: 13px; min-width: 0; }
 .file-meta > span:nth-child(2) { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .file-meta small { color: #74776d; white-space: nowrap; }

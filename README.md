@@ -1,25 +1,68 @@
 # Margin PDF Cropper
 
-一个完全在浏览器本地运行的 PDF 可视化裁切工具。拖入 PDF、框选要保留的区域，然后另存为新的 PDF。文件不会上传到服务器，也不需要后端。
+Margin is a privacy-friendly visual PDF cropper that runs entirely in the browser. Open a PDF, adjust the default crop area, and export a new document. Files are processed locally and are never uploaded to a server.
 
-在线访问：[https://oduan.github.io/PdfCropper/](https://oduan.github.io/PdfCropper/)
+**Live demo:** [https://oduan.github.io/PdfCropper/](https://oduan.github.io/PdfCropper/)
 
-## 开发
+## Features
+
+- Local, browser-only PDF processing
+- One adjustable crop area applied to every page
+- Drag to move and use the corner handles to resize
+- True PDF page cropping on export
+- Installable PWA with offline support
+- No backend or account required
+
+## Local development
+
+Requirements: Node.js 22 and npm.
 
 ```bash
-npm install
+npm ci
 npm run dev
 ```
 
-## 生产构建
+Create and preview a production build:
 
 ```bash
 npm run build
 npm run preview
 ```
 
-`dist/` 是可直接部署的静态网站，可托管在 GitHub Pages、Cloudflare Pages、Vercel 或任意静态 Web 服务器。
+The production files are written to `dist/` and can be hosted by any static web server.
 
-推送到 `main` 分支后，GitHub Actions 会自动构建并发布到 GitHub Pages。
+## Docker
 
-支持 PWA 安装和离线再次使用。PDF 内容只在浏览器内存中读取和处理，不会上传到服务器。
+Build and run the image directly:
+
+```bash
+docker build -t margin-pdf-cropper .
+docker run --rm -p 8080:80 margin-pdf-cropper
+```
+
+Or start it with Docker Compose:
+
+```bash
+docker compose up -d --build
+```
+
+Open [http://localhost:8080](http://localhost:8080) after the container starts. To stop the Compose deployment, run:
+
+```bash
+docker compose down
+```
+
+## GitHub Pages deployment
+
+GitHub Actions builds and deploys the site only when a tag matching `v*` is pushed. Create a release deployment with:
+
+```bash
+git tag v0.1
+git push origin v0.1
+```
+
+The workflow installs dependencies with `npm ci`, runs `npm run build`, and deploys the generated `dist/` directory to GitHub Pages.
+
+## Privacy
+
+PDF files are read and processed in browser memory. The application does not send document contents to a backend.

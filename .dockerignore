@@ -1,0 +1,9 @@
+.git
+.github
+dist
+node_modules
+.npm-cache
+coverage
+tmp
+output
+*.log
